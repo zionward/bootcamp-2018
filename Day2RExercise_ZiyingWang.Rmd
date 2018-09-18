@@ -1,0 +1,165 @@
+---
+title: "R Day 2"
+author: "Ziying Wang"
+date: "9/18/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+here::here("data", "gapminder5.csv")
+gapminder <- read.csv(here::here("data", "gapminder5.csv"))
+
+```
+
+##Converting factor to characters
+
+```{r}
+gapminder$country <- as.character(gapminder$country)
+gapminder$continent <- as.character(gapminder$continent)
+str(gapminder)
+
+```
+
+```{r}
+obs <- 1:nrow(gapminder)
+for (i in obs){
+  gapminder[i, "gdp"] <- gapminder[i,"pop"]*gapminder[i, "gdpPercap"]
+  
+}
+```
+
+```{r}
+for(i in obs){
+  gapminder[i, "log_gdpPercap"] <- log(gapminder[i, "gdpPercap"]) 
+  gapminder[i, "log_pop"] <- log(gapminder[i, "pop"])
+}
+```
+
+```{r}
+head(gapminder)
+```
+
+
+```{r}
+years <- unique(gapminder$year)
+for (i in years){
+  mean_le <- mean(gapminder$lifeExp[gapminder$year == i], na.rm = T)
+  print(paste0(i, ": ", mean_le))
+}
+```
+Which continent has the highest mean life expectancy
+```{r}
+continents <- unique(gapminder$continent)
+
+for (i in continents){
+  mean_le <- mean(gapminder$lifeExp[gapminder$continent == i], na.rm = T)
+  print(paste0(i, ": ", mean_le))
+}
+
+```
+
+What is the mean life expectancy for each continent for each year?
+
+```{r}
+for (i in continents){
+  print(paste0("continent: ", i))
+  for (j in years){
+    mean_le <- mean(gapminder$lifeExp[gapminder$continent == i & gapminder$year == j], na.rm = T)
+    print(paste0(j, ": ", mean_le))
+    
+  }
+  
+}
+```
+Has the gap in life expectancy between countries on different continents narrowed over time?
+```{r}
+for (i in years){
+  print(paste0("year: ",i))
+  for(j in continents){
+    sd_le <- sd(gapminder$lifeExp[gapminder$continent == j & gapminder$year ==i ], na.rm = T)
+    print(paste0(j, ": ", sd_le))
+  }
+}
+```
+```{r}
+vars <- gapminder[,c("lifeExp", "pop", "gdpPercap")]
+apply(vars, 2, mean)
+
+```
+```{r}
+lapply(gapminder, mean)
+```
+```{r}
+sapply(years, function(x) mean(gapminder$lifeExp[ gapminder$year == x ]))
+```
+What is the standard deviation for life expectancy for each year between 1987 and 2002 (inclusive)?
+```{r}
+i <- 1987
+while(i <= 2002){
+  sd_lf <- sd(gapminder$lifeExp[gapminder$year == i])
+  print(paste0(i , ": ", sd_lf))
+  i <- i +5
+}
+```
+
+```{r}
+
+set.seed(10)
+random_year <- sample(years, 1)
+
+if (random_year > 1977) {
+  print(random_year)
+}
+```
+
+Write a for loop that reports the mean population for years greater than or equal to 1987. Make sure the loop prints a message if the condition is not met!
+
+```{r}
+threshold<-1987
+
+for (i in unique(gapminder$year)){
+  tmp <- mean(gapminder$lifeExp[gapminder$year==i])
+  if (i < threshold){
+    print(paste("Mean life expectancy in", i, "is less than the threshold."))
+  }else{
+    print(paste("Mean life expectancy in", i, "is greater than the threshold. The mean pop is",tmp))
+  }
+
+}
+
+```
+
+```{r}
+get_value <- function(df, variable = "continent"){
+  val <- unique(df[variable])
+  print(paste0(variable, ": ", val))
+}
+```
+
+```{r}
+get_mean_sd <- function(df, variable, country){
+  var <- df[[variable]][df$country == country]
+  m_le <- mean(var)
+  sd_le <- sd(var)
+  cat("Country", country, "\nMean life Expectancy", m_le, "\nSD life Expectancy", sd_le)
+}
+
+get_mean_sd(gapminder, "lifeExp", "Bulgaria")
+```
+Write a function that reports the mean, median, minimum, and maximum for life expectancy for a continent in gapminder
+```{r}
+get_inform <- function(df, variable, continent){
+  var <- df[[variable]][df$continent == continent]
+  m_le <- mean(var)
+  medium <- median(var)
+  minimum <- min(var)
+  maximum <- max(var)
+  cat("Continent", continent, "\nMean life Expectancy", m_le, "\nMedian life Expectancy", medium, "\nMinimum life Expectancy", minimum, "\nMaximum life Expectancy", maximum)
+}
+
+get_inform(gapminder,"lifeExp", "Asia")
+```
